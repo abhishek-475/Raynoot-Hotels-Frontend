@@ -5,6 +5,7 @@ const API_URL = import.meta.env.VITE_API_BASE_URL|| 'https://raynott-college-3.o
 
 const API = axios.create({
   baseURL: API_URL,
+  timeout:15000,
 });
 
 // Attach JWT token to every request

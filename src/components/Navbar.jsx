@@ -1,11 +1,11 @@
 import { Link } from "react-router-dom";
 import { useContext, useState } from "react";
 import { AuthContext } from "../context/AuthContext";
-import { 
-  FaHotel, 
-  FaUser, 
-  FaSignOutAlt, 
-  FaBars, 
+import {
+  FaHotel,
+  FaUser,
+  FaSignOutAlt,
+  FaBars,
   FaTimes,
   FaTachometerAlt,
   FaSearch,
@@ -22,8 +22,8 @@ function Navbar() {
       <div className="container mx-auto px-4 sm:px-6">
         <div className="flex justify-between items-center py-3 md:py-4">
           {/* Logo */}
-          <Link 
-            to="/" 
+          <Link
+            to="/"
             className="flex items-center space-x-3 group"
             onClick={() => setIsOpen(false)}
           >
@@ -40,8 +40,8 @@ function Navbar() {
 
           {/* Desktop Menu */}
           <div className="hidden lg:flex items-center space-x-6 xl:space-x-8">
-            <Link 
-              to="/hotels" 
+            <Link
+              to="/hotels"
               className="font-medium hover:text-blue-200 transition-colors duration-200 py-2 px-1 border-b-2 border-transparent hover:border-blue-200 flex items-center space-x-2"
             >
               <FaSearch className="text-sm" />
@@ -60,7 +60,7 @@ function Navbar() {
                     <span>Dashboard</span>
                   </Link>
                 )}
-                
+
                 {/* User info */}
                 <div className="flex items-center space-x-3 bg-blue-500 rounded-lg px-4 py-2">
                   <div className="text-right">
@@ -150,6 +150,13 @@ function Navbar() {
                     <span>Admin Dashboard</span>
                   </Link>
                 )}
+
+                <Link to="/bookings/my" className="text-gray-700 hover:text-blue-600">
+                  My Bookings
+                </Link>
+                <Link to="/profile" className="text-gray-700 hover:text-blue-600">
+                  Profile
+                </Link>
 
                 {/* User Info */}
                 <div className="bg-blue-500 rounded-lg p-4 space-y-2">
