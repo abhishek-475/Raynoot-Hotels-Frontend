@@ -10,24 +10,38 @@ import {
   FaTachometerAlt,
   FaSearch,
   FaUserPlus,
-  FaSignInAlt
+  FaSignInAlt,
+  FaCalendarAlt,
+  FaIdCard,
+  FaInfoCircle,
+  FaPhone,
+  FaBookmark
 } from "react-icons/fa";
 
 function Navbar() {
-  const { user, logout } = useContext(AuthContext);
+  const { user, logout, isAuthenticated } = useContext(AuthContext);
   const [isOpen, setIsOpen] = useState(false);
 
+  const handleLogout = () => {
+    logout();
+    setIsOpen(false);
+  };
+
+  const closeMobileMenu = () => {
+    setIsOpen(false);
+  };
+
   return (
-    <nav className="bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg">
+    <nav className="bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg sticky top-0 z-50">
       <div className="container mx-auto px-4 sm:px-6">
         <div className="flex justify-between items-center py-3 md:py-4">
           {/* Logo */}
           <Link
             to="/"
             className="flex items-center space-x-3 group"
-            onClick={() => setIsOpen(false)}
+            onClick={closeMobileMenu}
           >
-            <div className="bg-white rounded-lg p-2">
+            <div className="bg-white rounded-lg p-2 group-hover:scale-110 transition-transform duration-200">
               <FaHotel className="text-blue-600 text-xl" />
             </div>
             <div>
@@ -40,6 +54,7 @@ function Navbar() {
 
           {/* Desktop Menu */}
           <div className="hidden lg:flex items-center space-x-6 xl:space-x-8">
+            {/* Navigation Links */}
             <Link
               to="/hotels"
               className="font-medium hover:text-blue-200 transition-colors duration-200 py-2 px-1 border-b-2 border-transparent hover:border-blue-200 flex items-center space-x-2"
@@ -48,8 +63,41 @@ function Navbar() {
               <span>Browse Hotels</span>
             </Link>
 
+            <Link
+              to="/about"
+              className="font-medium hover:text-blue-200 transition-colors duration-200 py-2 px-1 border-b-2 border-transparent hover:border-blue-200 flex items-center space-x-2"
+            >
+              <FaInfoCircle className="text-sm" />
+              <span>About</span>
+            </Link>
+
+            <Link
+              to="/contact"
+              className="font-medium hover:text-blue-200 transition-colors duration-200 py-2 px-1 border-b-2 border-transparent hover:border-blue-200 flex items-center space-x-2"
+            >
+              <FaPhone className="text-sm" />
+              <span>Contact</span>
+            </Link>
+
             {user ? (
               <div className="flex items-center space-x-4 xl:space-x-6">
+                {/* User-specific links */}
+                <Link
+                  to="/bookings/my"
+                  className="font-medium hover:text-blue-200 transition-colors duration-200 py-2 px-1 border-b-2 border-transparent hover:border-blue-200 flex items-center space-x-2"
+                >
+                  <FaCalendarAlt className="text-sm" />
+                  <span>My Bookings</span>
+                </Link>
+
+                <Link
+                  to="/profile"
+                  className="font-medium hover:text-blue-200 transition-colors duration-200 py-2 px-1 border-b-2 border-transparent hover:border-blue-200 flex items-center space-x-2"
+                >
+                  <FaIdCard className="text-sm" />
+                  <span>Profile</span>
+                </Link>
+
                 {/* Dashboard link for admin users */}
                 {user.role === "admin" && (
                   <Link
@@ -62,14 +110,18 @@ function Navbar() {
                 )}
 
                 {/* User info */}
-                <div className="flex items-center space-x-3 bg-blue-500 rounded-lg px-4 py-2">
+                <div className="flex items-center space-x-3 bg-blue-500 rounded-lg px-4 py-2 border border-blue-400">
+                  <div className="w-8 h-8 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+                    <span className="text-white font-semibold text-sm">
+                      {user.name?.charAt(0)?.toUpperCase() || 'U'}
+                    </span>
+                  </div>
                   <div className="text-right">
                     <div className="font-medium text-sm sm:text-base flex items-center space-x-2">
-                      <FaUser className="text-blue-200" />
                       <span>{user.name}</span>
                     </div>
                     <div className="text-blue-100 text-xs">
-                      {user.role === "admin" ? "Administrator" : "Guest"}
+                      {user.role === "admin" ? "Administrator" : "Member"}
                     </div>
                   </div>
                   {user.role === "admin" && (
@@ -81,7 +133,7 @@ function Navbar() {
 
                 {/* Logout button */}
                 <button
-                  onClick={logout}
+                  onClick={handleLogout}
                   className="bg-white text-blue-600 font-semibold px-4 py-2 rounded-lg hover:bg-gray-100 transition-all duration-200 shadow hover:shadow-md flex items-center space-x-2"
                 >
                   <FaSignOutAlt className="text-lg" />
@@ -125,44 +177,78 @@ function Navbar() {
         </div>
 
         {/* Mobile Menu */}
-        <div className={`lg:hidden transition-all duration-300 ease-in-out overflow-hidden ${isOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}>
-          <div className="py-4 space-y-3 border-t border-blue-500">
-            {/* Navigation Links */}
+        <div className={`lg:hidden transition-all duration-300 ease-in-out overflow-hidden ${isOpen ? 'max-h-96 opacity-100 pb-4' : 'max-h-0 opacity-0'}`}>
+          <div className="py-4 space-y-2 border-t border-blue-500">
+            {/* Common Navigation Links */}
             <Link
               to="/hotels"
               className="flex items-center space-x-3 py-3 px-4 rounded-lg hover:bg-blue-500 transition-colors duration-200 font-medium"
-              onClick={() => setIsOpen(false)}
+              onClick={closeMobileMenu}
             >
               <FaSearch />
               <span>Browse Hotels</span>
             </Link>
 
+            <Link
+              to="/about"
+              className="flex items-center space-x-3 py-3 px-4 rounded-lg hover:bg-blue-500 transition-colors duration-200 font-medium"
+              onClick={closeMobileMenu}
+            >
+              <FaInfoCircle />
+              <span>About Us</span>
+            </Link>
+
+            <Link
+              to="/contact"
+              className="flex items-center space-x-3 py-3 px-4 rounded-lg hover:bg-blue-500 transition-colors duration-200 font-medium"
+              onClick={closeMobileMenu}
+            >
+              <FaPhone />
+              <span>Contact</span>
+            </Link>
+
             {user ? (
               <>
+                {/* User-specific links */}
+                <Link
+                  to="/bookings/my"
+                  className="flex items-center space-x-3 py-3 px-4 rounded-lg hover:bg-blue-500 transition-colors duration-200 font-medium"
+                  onClick={closeMobileMenu}
+                >
+                  <FaCalendarAlt />
+                  <span>My Bookings</span>
+                </Link>
+
+                <Link
+                  to="/profile"
+                  className="flex items-center space-x-3 py-3 px-4 rounded-lg hover:bg-blue-500 transition-colors duration-200 font-medium"
+                  onClick={closeMobileMenu}
+                >
+                  <FaIdCard />
+                  <span>My Profile</span>
+                </Link>
+
                 {/* Admin Dashboard */}
                 {user.role === "admin" && (
                   <Link
                     to="/admin/dashboard"
                     className="flex items-center space-x-3 py-3 px-4 bg-yellow-400 text-blue-900 rounded-lg font-semibold hover:bg-yellow-300 transition-colors duration-200"
-                    onClick={() => setIsOpen(false)}
+                    onClick={closeMobileMenu}
                   >
                     <FaTachometerAlt />
                     <span>Admin Dashboard</span>
                   </Link>
                 )}
 
-                <Link to="/bookings/my" className="text-gray-700 hover:text-blue-600">
-                  My Bookings
-                </Link>
-                <Link to="/profile" className="text-gray-700 hover:text-blue-600">
-                  Profile
-                </Link>
-
                 {/* User Info */}
-                <div className="bg-blue-500 rounded-lg p-4 space-y-2">
+                <div className="bg-blue-500 rounded-lg p-4 space-y-2 mt-2">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
-                      <FaUser className="text-blue-200 text-lg" />
+                      <div className="w-10 h-10 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+                        <span className="text-white font-semibold">
+                          {user.name?.charAt(0)?.toUpperCase() || 'U'}
+                        </span>
+                      </div>
                       <div>
                         <div className="font-semibold">{user.name}</div>
                         <div className="text-blue-100 text-sm">
@@ -176,15 +262,15 @@ function Navbar() {
                       </span>
                     )}
                   </div>
+                  <div className="text-blue-200 text-xs text-center">
+                    {user.role === "admin" ? "Administrator" : "Member"} Account
+                  </div>
                 </div>
 
                 {/* Logout */}
                 <button
-                  onClick={() => {
-                    logout();
-                    setIsOpen(false);
-                  }}
-                  className="w-full flex items-center space-x-3 bg-white text-blue-600 font-semibold py-3 px-4 rounded-lg hover:bg-gray-100 transition-colors duration-200"
+                  onClick={handleLogout}
+                  className="w-full flex items-center space-x-3 bg-white text-blue-600 font-semibold py-3 px-4 rounded-lg hover:bg-gray-100 transition-colors duration-200 mt-2"
                 >
                   <FaSignOutAlt />
                   <span>Logout</span>
@@ -195,7 +281,7 @@ function Navbar() {
                 <Link
                   to="/login"
                   className="flex items-center space-x-3 py-3 px-4 rounded-lg hover:bg-blue-500 transition-colors duration-200 font-medium"
-                  onClick={() => setIsOpen(false)}
+                  onClick={closeMobileMenu}
                 >
                   <FaSignInAlt />
                   <span>Login</span>
@@ -203,10 +289,10 @@ function Navbar() {
                 <Link
                   to="/register"
                   className="flex items-center space-x-3 bg-white text-blue-600 font-semibold py-3 px-4 rounded-lg hover:bg-gray-100 transition-colors duration-200"
-                  onClick={() => setIsOpen(false)}
+                  onClick={closeMobileMenu}
                 >
                   <FaUserPlus />
-                  <span>Sign Up</span>
+                  <span>Create Account</span>
                 </Link>
               </>
             )}
