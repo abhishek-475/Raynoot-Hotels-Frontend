@@ -1,13 +1,12 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useContext, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { AuthContext } from "../context/AuthContext";
 import {
   FaHotel,
-  FaUser,
   FaSignOutAlt,
   FaBars,
   FaTimes,
-  FaTachometerAlt,
   FaSearch,
   FaUserPlus,
   FaSignInAlt,
@@ -15,291 +14,234 @@ import {
   FaIdCard,
   FaInfoCircle,
   FaPhone,
-  FaBookmark
+  FaTachometerAlt
 } from "react-icons/fa";
 
 function Navbar() {
-  const { user, logout, isAuthenticated } = useContext(AuthContext);
+  const { user, logout } = useContext(AuthContext);
   const [isOpen, setIsOpen] = useState(false);
+  const location = useLocation();
 
   const handleLogout = () => {
     logout();
     setIsOpen(false);
   };
 
-  const closeMobileMenu = () => {
-    setIsOpen(false);
-  };
+  const isActive = (path) => location.pathname === path;
 
   return (
-    <nav className="bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg sticky top-0 z-50">
-      <div className="container mx-auto px-4 sm:px-6">
-        <div className="flex justify-between items-center py-3 md:py-4">
-          {/* Logo */}
-          <Link
-            to="/"
-            className="flex items-center space-x-3 group"
-            onClick={closeMobileMenu}
-          >
-            <div className="bg-white rounded-lg p-2 group-hover:scale-110 transition-transform duration-200">
-              <FaHotel className="text-blue-600 text-xl" />
+    <nav className="fixed w-full z-50 transition-all duration-300"
+      style={{
+        background: "rgba(255,255,255,0.85)",
+        backdropFilter: "blur(20px)",
+        WebkitBackdropFilter: "blur(20px)",
+        borderBottom: "1px solid rgba(0,0,0,0.06)",
+        boxShadow: "0 1px 24px 0 rgba(0,0,0,0.04)"
+      }}
+    >
+      <div className="max-w-7xl mx-auto px-5">
+
+        {/* TOP BAR */}
+        <div className="flex justify-between items-center h-16">
+
+          {/* LOGO */}
+          <Link to="/" className="flex items-center gap-3 group">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center shadow-md shadow-orange-200 group-hover:scale-105 transition-transform duration-200">
+              <FaHotel className="text-white text-sm" />
             </div>
-            <div>
-              <span className="font-bold text-xl sm:text-2xl group-hover:text-blue-200 transition-colors block">
-                Raynott Hotels
-              </span>
-              <span className="text-blue-200 text-xs hidden sm:block">Luxury Stays</span>
+            <div className="leading-tight">
+              <span className="font-black text-gray-900 text-lg tracking-tight">Raynott</span>
+              <span className="block text-[10px] font-medium text-gray-400 tracking-widest uppercase -mt-0.5">Luxury Stays</span>
             </div>
           </Link>
 
-          {/* Desktop Menu */}
-          <div className="hidden lg:flex items-center space-x-6 xl:space-x-8">
-            {/* Navigation Links */}
-            <Link
-              to="/hotels"
-              className="font-medium hover:text-blue-200 transition-colors duration-200 py-2 px-1 border-b-2 border-transparent hover:border-blue-200 flex items-center space-x-2"
-            >
-              <FaSearch className="text-sm" />
-              <span>Browse Hotels</span>
-            </Link>
+          {/* DESKTOP MENU */}
+          <div className="hidden lg:flex items-center gap-1">
+            <NavLink to="/hotels" icon={<FaSearch />} label="Hotels" active={isActive("/hotels")} />
+            <NavLink to="/about" icon={<FaInfoCircle />} label="About" active={isActive("/about")} />
+            <NavLink to="/contact" icon={<FaPhone />} label="Contact" active={isActive("/contact")} />
+          </div>
 
-            <Link
-              to="/about"
-              className="font-medium hover:text-blue-200 transition-colors duration-200 py-2 px-1 border-b-2 border-transparent hover:border-blue-200 flex items-center space-x-2"
-            >
-              <FaInfoCircle className="text-sm" />
-              <span>About</span>
-            </Link>
-
-            <Link
-              to="/contact"
-              className="font-medium hover:text-blue-200 transition-colors duration-200 py-2 px-1 border-b-2 border-transparent hover:border-blue-200 flex items-center space-x-2"
-            >
-              <FaPhone className="text-sm" />
-              <span>Contact</span>
-            </Link>
-
+          {/* DESKTOP AUTH */}
+          <div className="hidden lg:flex items-center gap-3">
             {user ? (
-              <div className="flex items-center space-x-4 xl:space-x-6">
-                {/* User-specific links */}
-                <Link
-                  to="/bookings/my"
-                  className="font-medium hover:text-blue-200 transition-colors duration-200 py-2 px-1 border-b-2 border-transparent hover:border-blue-200 flex items-center space-x-2"
-                >
-                  <FaCalendarAlt className="text-sm" />
-                  <span>My Bookings</span>
-                </Link>
+              <>
+                <NavLink to="/bookings/my" icon={<FaCalendarAlt />} label="Bookings" active={isActive("/bookings/my")} />
 
-                <Link
-                  to="/profile"
-                  className="font-medium hover:text-blue-200 transition-colors duration-200 py-2 px-1 border-b-2 border-transparent hover:border-blue-200 flex items-center space-x-2"
-                >
-                  <FaIdCard className="text-sm" />
-                  <span>Profile</span>
-                </Link>
-
-                {/* Dashboard link for admin users */}
                 {user.role === "admin" && (
                   <Link
                     to="/admin/dashboard"
-                    className="bg-yellow-400 text-blue-900 font-semibold px-4 py-2 rounded-lg hover:bg-yellow-300 transition-all duration-200 shadow-md hover:shadow-lg flex items-center space-x-2"
+                    className="inline-flex items-center gap-1.5 bg-gray-900 text-white text-sm px-4 py-2 rounded-xl font-semibold hover:bg-gray-800 transition-colors"
                   >
-                    <FaTachometerAlt className="text-lg" />
-                    <span>Dashboard</span>
+                    <FaTachometerAlt className="text-xs" />
+                    Dashboard
                   </Link>
                 )}
 
-                {/* User info */}
-                <div className="flex items-center space-x-3 bg-blue-500 rounded-lg px-4 py-2 border border-blue-400">
-                  <div className="w-8 h-8 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
-                    <span className="text-white font-semibold text-sm">
-                      {user.name?.charAt(0)?.toUpperCase() || 'U'}
-                    </span>
+                {/* USER PILL */}
+                <Link
+                  to="/profile"
+                  className="flex items-center gap-2.5 bg-gray-50 hover:bg-gray-100 border border-gray-200 px-3 py-1.5 rounded-full transition-colors"
+                >
+                  <div className="w-7 h-7 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 text-white text-xs flex items-center justify-center font-bold">
+                    {user.name?.charAt(0).toUpperCase()}
                   </div>
-                  <div className="text-right">
-                    <div className="font-medium text-sm sm:text-base flex items-center space-x-2">
-                      <span>{user.name}</span>
-                    </div>
-                    <div className="text-blue-100 text-xs">
-                      {user.role === "admin" ? "Administrator" : "Member"}
-                    </div>
-                  </div>
-                  {user.role === "admin" && (
-                    <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full font-bold animate-pulse">
-                      ADMIN
-                    </span>
-                  )}
-                </div>
+                  <span className="text-sm font-semibold text-gray-700 pr-0.5">{user.name}</span>
+                </Link>
 
-                {/* Logout button */}
                 <button
                   onClick={handleLogout}
-                  className="bg-white text-blue-600 font-semibold px-4 py-2 rounded-lg hover:bg-gray-100 transition-all duration-200 shadow hover:shadow-md flex items-center space-x-2"
+                  title="Log out"
+                  className="w-8 h-8 flex items-center justify-center rounded-full text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all"
                 >
-                  <FaSignOutAlt className="text-lg" />
-                  <span>Logout</span>
+                  <FaSignOutAlt className="text-sm" />
                 </button>
-              </div>
+              </>
             ) : (
-              <div className="flex items-center space-x-4">
+              <>
                 <Link
                   to="/login"
-                  className="font-medium hover:text-blue-200 transition-colors duration-200 py-2 px-1 border-b-2 border-transparent hover:border-blue-200 flex items-center space-x-2"
+                  className="text-sm font-semibold text-gray-600 hover:text-gray-900 px-3 py-2 rounded-xl hover:bg-gray-100 transition-colors"
                 >
-                  <FaSignInAlt className="text-sm" />
-                  <span>Login</span>
+                  Log in
                 </Link>
                 <Link
                   to="/register"
-                  className="bg-white text-blue-600 font-semibold px-4 py-2 rounded-lg hover:bg-gray-100 transition-all duration-200 shadow hover:shadow-md flex items-center space-x-2"
+                  className="inline-flex items-center gap-1.5 bg-gradient-to-r from-yellow-400 to-orange-500 text-black text-sm px-5 py-2 rounded-xl font-bold hover:scale-105 hover:shadow-md hover:shadow-orange-200 transition-all duration-200"
                 >
-                  <FaUserPlus className="text-lg" />
-                  <span>Sign Up</span>
+                  <FaUserPlus className="text-xs" />
+                  Sign Up
                 </Link>
-              </div>
+              </>
             )}
           </div>
 
-          {/* Mobile Menu Button */}
-          <div className="lg:hidden">
-            <button
-              onClick={() => setIsOpen(!isOpen)}
-              className="p-3 rounded-lg hover:bg-blue-500 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-300"
-              aria-label="Toggle menu"
-            >
-              {isOpen ? (
-                <FaTimes className="text-xl" />
-              ) : (
-                <FaBars className="text-xl" />
-              )}
-            </button>
-          </div>
+          {/* MOBILE BUTTON */}
+          <button
+            onClick={() => setIsOpen(!isOpen)}
+            className="lg:hidden w-9 h-9 flex items-center justify-center rounded-xl text-gray-700 hover:bg-gray-100 transition-colors"
+          >
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.span
+                key={isOpen ? "close" : "open"}
+                initial={{ rotate: -90, opacity: 0 }}
+                animate={{ rotate: 0, opacity: 1 }}
+                exit={{ rotate: 90, opacity: 0 }}
+                transition={{ duration: 0.15 }}
+              >
+                {isOpen ? <FaTimes size={18} /> : <FaBars size={18} />}
+              </motion.span>
+            </AnimatePresence>
+          </button>
         </div>
 
-        {/* Mobile Menu */}
-        <div className={`lg:hidden transition-all duration-300 ease-in-out overflow-hidden ${isOpen ? 'max-h-96 opacity-100 pb-4' : 'max-h-0 opacity-0'}`}>
-          <div className="py-4 space-y-2 border-t border-blue-500">
-            {/* Common Navigation Links */}
-            <Link
-              to="/hotels"
-              className="flex items-center space-x-3 py-3 px-4 rounded-lg hover:bg-blue-500 transition-colors duration-200 font-medium"
-              onClick={closeMobileMenu}
+        {/* MOBILE MENU */}
+        <AnimatePresence>
+          {isOpen && (
+            <motion.div
+              initial={{ opacity: 0, y: -8, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -8, scale: 0.98 }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
+              className="lg:hidden mb-3 rounded-2xl overflow-hidden border border-gray-100"
+              style={{ background: "rgba(255,255,255,0.97)", boxShadow: "0 8px 32px rgba(0,0,0,0.08)" }}
             >
-              <FaSearch />
-              <span>Browse Hotels</span>
-            </Link>
+              <div className="p-3 space-y-0.5">
+                <p className="text-[10px] font-bold tracking-widest text-gray-400 uppercase px-3 pt-1 pb-2">Navigation</p>
+                <MobileLink to="/hotels" icon={<FaSearch />} label="Hotels" onClick={() => setIsOpen(false)} />
+                <MobileLink to="/about" icon={<FaInfoCircle />} label="About" onClick={() => setIsOpen(false)} />
+                <MobileLink to="/contact" icon={<FaPhone />} label="Contact" onClick={() => setIsOpen(false)} />
 
-            <Link
-              to="/about"
-              className="flex items-center space-x-3 py-3 px-4 rounded-lg hover:bg-blue-500 transition-colors duration-200 font-medium"
-              onClick={closeMobileMenu}
-            >
-              <FaInfoCircle />
-              <span>About Us</span>
-            </Link>
+                {user ? (
+                  <>
+                    <div className="h-px bg-gray-100 my-2 mx-3" />
+                    <p className="text-[10px] font-bold tracking-widest text-gray-400 uppercase px-3 pt-1 pb-2">Account</p>
 
-            <Link
-              to="/contact"
-              className="flex items-center space-x-3 py-3 px-4 rounded-lg hover:bg-blue-500 transition-colors duration-200 font-medium"
-              onClick={closeMobileMenu}
-            >
-              <FaPhone />
-              <span>Contact</span>
-            </Link>
-
-            {user ? (
-              <>
-                {/* User-specific links */}
-                <Link
-                  to="/bookings/my"
-                  className="flex items-center space-x-3 py-3 px-4 rounded-lg hover:bg-blue-500 transition-colors duration-200 font-medium"
-                  onClick={closeMobileMenu}
-                >
-                  <FaCalendarAlt />
-                  <span>My Bookings</span>
-                </Link>
-
-                <Link
-                  to="/profile"
-                  className="flex items-center space-x-3 py-3 px-4 rounded-lg hover:bg-blue-500 transition-colors duration-200 font-medium"
-                  onClick={closeMobileMenu}
-                >
-                  <FaIdCard />
-                  <span>My Profile</span>
-                </Link>
-
-                {/* Admin Dashboard */}
-                {user.role === "admin" && (
-                  <Link
-                    to="/admin/dashboard"
-                    className="flex items-center space-x-3 py-3 px-4 bg-yellow-400 text-blue-900 rounded-lg font-semibold hover:bg-yellow-300 transition-colors duration-200"
-                    onClick={closeMobileMenu}
-                  >
-                    <FaTachometerAlt />
-                    <span>Admin Dashboard</span>
-                  </Link>
-                )}
-
-                {/* User Info */}
-                <div className="bg-blue-500 rounded-lg p-4 space-y-2 mt-2">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
-                        <span className="text-white font-semibold">
-                          {user.name?.charAt(0)?.toUpperCase() || 'U'}
-                        </span>
+                    {/* User info row */}
+                    <div className="flex items-center gap-3 px-3 py-2.5 mb-1">
+                      <div className="w-9 h-9 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 text-white text-sm flex items-center justify-center font-bold flex-shrink-0">
+                        {user.name?.charAt(0).toUpperCase()}
                       </div>
                       <div>
-                        <div className="font-semibold">{user.name}</div>
-                        <div className="text-blue-100 text-sm">
-                          {user.email}
-                        </div>
+                        <p className="text-sm font-bold text-gray-900">{user.name}</p>
+                        <p className="text-xs text-gray-400">{user.role === "admin" ? "Administrator" : "Guest"}</p>
                       </div>
                     </div>
-                    {user.role === "admin" && (
-                      <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full font-bold">
-                        ADMIN
-                      </span>
-                    )}
-                  </div>
-                  <div className="text-blue-200 text-xs text-center">
-                    {user.role === "admin" ? "Administrator" : "Member"} Account
-                  </div>
-                </div>
 
-                {/* Logout */}
-                <button
-                  onClick={handleLogout}
-                  className="w-full flex items-center space-x-3 bg-white text-blue-600 font-semibold py-3 px-4 rounded-lg hover:bg-gray-100 transition-colors duration-200 mt-2"
-                >
-                  <FaSignOutAlt />
-                  <span>Logout</span>
-                </button>
-              </>
-            ) : (
-              <>
-                <Link
-                  to="/login"
-                  className="flex items-center space-x-3 py-3 px-4 rounded-lg hover:bg-blue-500 transition-colors duration-200 font-medium"
-                  onClick={closeMobileMenu}
-                >
-                  <FaSignInAlt />
-                  <span>Login</span>
-                </Link>
-                <Link
-                  to="/register"
-                  className="flex items-center space-x-3 bg-white text-blue-600 font-semibold py-3 px-4 rounded-lg hover:bg-gray-100 transition-colors duration-200"
-                  onClick={closeMobileMenu}
-                >
-                  <FaUserPlus />
-                  <span>Create Account</span>
-                </Link>
-              </>
-            )}
-          </div>
-        </div>
+                    <MobileLink to="/bookings/my" icon={<FaCalendarAlt />} label="My Bookings" onClick={() => setIsOpen(false)} />
+                    <MobileLink to="/profile" icon={<FaIdCard />} label="Profile" onClick={() => setIsOpen(false)} />
+
+                    {user.role === "admin" && (
+                      <MobileLink to="/admin/dashboard" icon={<FaTachometerAlt />} label="Dashboard" onClick={() => setIsOpen(false)} />
+                    )}
+
+                    <div className="h-px bg-gray-100 my-2 mx-3" />
+                    <button
+                      onClick={handleLogout}
+                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-red-500 hover:bg-red-50 transition-colors font-semibold text-sm"
+                    >
+                      <FaSignOutAlt className="text-base" />
+                      Log out
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <div className="h-px bg-gray-100 my-2 mx-3" />
+                    <MobileLink to="/login" icon={<FaSignInAlt />} label="Log in" onClick={() => setIsOpen(false)} />
+                    <div className="px-3 pt-1 pb-2">
+                      <Link
+                        to="/register"
+                        onClick={() => setIsOpen(false)}
+                        className="flex items-center justify-center gap-2 w-full bg-gradient-to-r from-yellow-400 to-orange-500 text-black font-bold text-sm py-3 rounded-xl hover:opacity-90 transition-opacity"
+                      >
+                        <FaUserPlus className="text-xs" />
+                        Create Account
+                      </Link>
+                    </div>
+                  </>
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
       </div>
     </nav>
+  );
+}
+
+function NavLink({ to, icon, label, active }) {
+  return (
+    <Link
+      to={to}
+      className={`relative flex items-center gap-1.5 text-sm font-semibold px-3 py-2 rounded-xl transition-colors ${
+        active
+          ? "text-orange-500 bg-orange-50"
+          : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+      }`}
+    >
+      <span className="text-xs opacity-70">{icon}</span>
+      {label}
+      {active && (
+        <motion.div
+          layoutId="nav-active"
+          className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-orange-400"
+        />
+      )}
+    </Link>
+  );
+}
+
+function MobileLink({ to, icon, label, onClick }) {
+  return (
+    <Link
+      to={to}
+      onClick={onClick}
+      className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-700 hover:bg-gray-50 transition-colors text-sm font-medium"
+    >
+      <span className="text-gray-400 text-base w-5 flex-shrink-0">{icon}</span>
+      {label}
+    </Link>
   );
 }
 
