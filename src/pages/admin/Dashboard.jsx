@@ -5,15 +5,13 @@ import { getAllHotels } from "../../services/hotelService";
 import { AuthContext } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
-import { 
-  FaChartLine, 
-  FaUsers, 
-  FaHotel, 
-  FaMoneyBillWave, 
+import {
+  FaUsers,
+  FaHotel,
+  FaMoneyBillWave,
   FaCalendarAlt,
-  FaExclamationTriangle,
+  FaLock,
   FaSpinner,
-  FaLock
 } from "react-icons/fa";
 
 export default function Dashboard() {
@@ -23,26 +21,22 @@ export default function Dashboard() {
     totalHotels: 0,
     totalRevenue: 0,
   });
+
   const [loading, setLoading] = useState(true);
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
 
   const fetchStats = async () => {
-    // Only fetch admin data if user is admin
     if (!user || user.role !== "admin") {
-      console.log("User is not admin, skipping admin data fetch");
       setLoading(false);
       return;
     }
 
     try {
-      console.log("Fetching admin dashboard data...");
-      
-      // Use Promise.all to fetch data in parallel
       const [bookings, users, hotels] = await Promise.all([
         getAllBookings(),
         getAllUsers(),
-        getAllHotels()
+        getAllHotels(),
       ]);
 
       const totalRevenue = bookings.reduce(
@@ -56,19 +50,16 @@ export default function Dashboard() {
         totalHotels: hotels.length,
         totalRevenue,
       });
-      
-      toast.success("Dashboard data loaded successfully");
     } catch (err) {
-      console.error("Dashboard error:", err);
-      
       if (err.response?.status === 401) {
         toast.error("Access denied. Admin privileges required.");
         navigate("/");
       } else {
-        toast.error("Failed to fetch dashboard stats");
+        toast.error("Failed to load dashboard stats");
       }
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   useEffect(() => {
@@ -76,68 +67,44 @@ export default function Dashboard() {
   }, [user]);
 
   const cards = [
-    { 
-      label: "Total Bookings", 
-      value: stats.totalBookings, 
+    {
+      label: "Total Bookings",
+      value: stats.totalBookings,
       icon: FaCalendarAlt,
-      color: "blue",
-      gradient: "from-blue-500 to-blue-600",
-      textColor: "text-blue-600"
     },
-    { 
-      label: "Total Users", 
-      value: stats.totalUsers, 
+    {
+      label: "Total Users",
+      value: stats.totalUsers,
       icon: FaUsers,
-      color: "green",
-      gradient: "from-green-500 to-green-600",
-      textColor: "text-green-600"
     },
-    { 
-      label: "Total Hotels", 
-      value: stats.totalHotels, 
+    {
+      label: "Hotels Listed",
+      value: stats.totalHotels,
       icon: FaHotel,
-      color: "purple",
-      gradient: "from-purple-500 to-purple-600",
-      textColor: "text-purple-600"
     },
-    { 
-      label: "Total Revenue", 
-      value: `₹${stats.totalRevenue.toLocaleString()}`, 
+    {
+      label: "Revenue",
+      value: `₹${stats.totalRevenue.toLocaleString()}`,
       icon: FaMoneyBillWave,
-      color: "yellow",
-      gradient: "from-yellow-500 to-yellow-600",
-      textColor: "text-yellow-600"
     },
   ];
 
-  // Show access denied if not admin
   if (user && user.role !== "admin") {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
-        <div className="max-w-md w-full bg-white rounded-2xl shadow-lg border border-gray-200 p-8 text-center">
-          <div className="flex justify-center mb-6">
-            <div className="bg-red-100 p-4 rounded-full">
-              <FaLock className="text-red-600 text-4xl" />
-            </div>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 p-6">
+        <div className="bg-white rounded-3xl shadow-xl border border-gray-200 p-10 max-w-md w-full text-center">
+          <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <FaLock className="text-red-500 text-3xl" />
           </div>
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">
-            Access Denied
-          </h2>
-          <p className="text-gray-600 mb-6">
-            Administrator privileges are required to access the dashboard.
+          <h2 className="text-3xl font-bold text-gray-900 mb-3">Access Denied</h2>
+          <p className="text-gray-500 mb-6">
+            You do not have permission to access the admin dashboard.
           </p>
-          <div className="bg-gray-50 rounded-lg p-4 mb-6">
-            <div className="flex items-center justify-center space-x-2 text-sm text-gray-500">
-              <FaUsers className="text-gray-400" />
-              <span>Current Role: </span>
-              <span className="font-semibold text-gray-700 capitalize">{user.role}</span>
-            </div>
-          </div>
           <button
             onClick={() => navigate("/")}
-            className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors duration-200 font-semibold"
+            className="w-full bg-black text-white py-3 rounded-xl font-semibold hover:bg-gray-800 transition"
           >
-            Return to Home
+            Return Home
           </button>
         </div>
       </div>
@@ -145,136 +112,141 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 sm:p-6 lg:p-8">
-      {/* Header */}
-      <div className="mb-8">
-        <div className="flex items-center space-x-4 mb-2">
-          <div className="bg-blue-600 p-3 rounded-2xl">
-            <FaChartLine className="text-white text-2xl" />
-          </div>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 px-6 py-8">
+      <div className="max-w-7xl mx-auto">
+
+        {/* HEADER */}
+        <div className="mb-10 flex items-center justify-between flex-wrap gap-4">
           <div>
-            <h1 className="text-3xl sm:text-4xl font-bold text-gray-800">
-              Admin Dashboard
+            <h1 className="text-4xl font-bold text-gray-900 tracking-tight">
+              Dashboard
             </h1>
-            <p className="text-gray-600 mt-1">
-              Overview of your hotel management system
+            <p className="text-gray-500 mt-1">
+              Welcome back, {user?.name || "Admin"}
             </p>
           </div>
-        </div>
-      </div>
 
-      {loading ? (
-        <div className="flex flex-col items-center justify-center py-20">
-          <div className="relative">
-            <FaSpinner className="text-6xl text-blue-600 animate-spin mb-4" />
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-600 opacity-20 rounded-full blur-sm"></div>
+          <div className="flex items-center gap-3 bg-white/70 backdrop-blur-xl border border-gray-200 px-4 py-2 rounded-2xl shadow-sm">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-r from-black to-gray-700 text-white flex items-center justify-center font-bold">
+              {user?.name?.charAt(0)?.toUpperCase()}
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-gray-800">{user?.name}</p>
+              <p className="text-xs text-gray-500">Administrator</p>
+            </div>
           </div>
-          <p className="text-gray-600 text-lg mt-4">Loading dashboard data...</p>
-          <p className="text-gray-400 text-sm mt-2">Please wait a moment</p>
         </div>
-      ) : (
-        <>
-          {/* Stats Cards Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
-            {cards.map((card, index) => {
-              const IconComponent = card.icon;
-              return (
-                <div
-                  key={card.label}
-                  className="bg-white rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 p-6 relative overflow-hidden group"
-                >
-                  {/* Background Gradient */}
-                  <div className={`absolute top-0 right-0 w-20 h-20 bg-gradient-to-br ${card.gradient} opacity-5 rounded-full -translate-y-8 translate-x-8 group-hover:scale-150 transition-transform duration-300`}></div>
-                  
-                  <div className="relative z-10">
-                    <div className="flex justify-between items-start mb-4">
+
+        {/* LOADING */}
+        {loading ? (
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            {[...Array(4)].map((_, i) => (
+              <div
+                key={i}
+                className="h-36 rounded-3xl bg-gray-200 animate-pulse"
+              ></div>
+            ))}
+          </div>
+        ) : (
+          <>
+            {/* STATS CARDS */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+              {cards.map((card) => {
+                const Icon = card.icon;
+                return (
+                  <div
+                    key={card.label}
+                    className="bg-white/70 backdrop-blur-xl border border-gray-200 rounded-3xl p-6 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
+                  >
+                    <div className="flex items-center justify-between mb-6">
                       <div>
-                        <p className="text-gray-500 text-sm font-medium uppercase tracking-wide">
+                        <p className="text-xs uppercase tracking-wide text-gray-500">
                           {card.label}
                         </p>
-                        <p className={`text-3xl font-bold mt-2 ${card.textColor}`}>
+                        <h2 className="text-3xl font-bold text-gray-900 mt-2">
                           {card.value}
-                        </p>
+                        </h2>
                       </div>
-                      <div className={`bg-gradient-to-br ${card.gradient} p-3 rounded-xl text-white`}>
-                        <IconComponent className="text-xl" />
+
+                      <div className="w-12 h-12 rounded-2xl bg-gray-100 flex items-center justify-center">
+                        <Icon className="text-gray-700 text-lg" />
                       </div>
                     </div>
-                    
-                    {/* Progress Bar */}
-                    <div className="w-full bg-gray-200 rounded-full h-2 mt-4">
-                      <div 
-                        className={`bg-gradient-to-r ${card.gradient} h-2 rounded-full transition-all duration-1000 ease-out`}
-                        style={{ 
-                          width: `${Math.min((stats[Object.keys(stats)[index]] / Math.max(stats.totalBookings, stats.totalUsers, stats.totalHotels, stats.totalRevenue / 1000)) * 100, 100)}%` 
-                        }}
-                      ></div>
-                    </div>
+
+                    <p className="text-xs text-gray-400">Updated just now</p>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* INSIGHTS */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              
+              {/* Quick Insights */}
+              <div className="bg-white/70 backdrop-blur-xl border border-gray-200 rounded-3xl p-6 shadow-sm">
+                <h3 className="text-lg font-semibold text-gray-900 mb-6">
+                  Quick Insights
+                </h3>
+
+                <div className="space-y-5 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">Avg Booking Value</span>
+                    <span className="font-semibold text-gray-900">
+                      ₹{stats.totalBookings > 0
+                        ? Math.round(stats.totalRevenue / stats.totalBookings)
+                        : 0}
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">Users per Hotel</span>
+                    <span className="font-semibold text-gray-900">
+                      {stats.totalHotels > 0
+                        ? (stats.totalUsers / stats.totalHotels).toFixed(1)
+                        : 0}
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">Bookings per Hotel</span>
+                    <span className="font-semibold text-gray-900">
+                      {stats.totalHotels > 0
+                        ? (stats.totalBookings / stats.totalHotels).toFixed(1)
+                        : 0}
+                    </span>
                   </div>
                 </div>
-              );
-            })}
-          </div>
-
-          {/* Additional Stats Section */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Quick Stats */}
-            <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
-              <h3 className="text-xl font-semibold text-gray-800 mb-4 flex items-center space-x-2">
-                <FaChartLine className="text-blue-600" />
-                <span>Quick Insights</span>
-              </h3>
-              <div className="space-y-4">
-                <div className="flex justify-between items-center py-3 border-b border-gray-100">
-                  <span className="text-gray-600">Average Booking Value</span>
-                  <span className="font-semibold text-green-600">
-                    ₹{stats.totalBookings > 0 ? Math.round(stats.totalRevenue / stats.totalBookings) : 0}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center py-3 border-b border-gray-100">
-                  <span className="text-gray-600">Users per Hotel</span>
-                  <span className="font-semibold text-purple-600">
-                    {stats.totalHotels > 0 ? (stats.totalUsers / stats.totalHotels).toFixed(1) : 0}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center py-3">
-                  <span className="text-gray-600">Bookings per Hotel</span>
-                  <span className="font-semibold text-blue-600">
-                    {stats.totalHotels > 0 ? (stats.totalBookings / stats.totalHotels).toFixed(1) : 0}
-                  </span>
-                </div>
               </div>
-            </div>
 
-            {/* System Status */}
-            <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
-              <h3 className="text-xl font-semibold text-gray-800 mb-4 flex items-center space-x-2">
-                <FaExclamationTriangle className="text-yellow-600" />
-                <span>System Status</span>
-              </h3>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg border border-green-200">
-                  <span className="text-green-700 font-medium">All Systems Operational</span>
+              {/* System Status */}
+              <div className="bg-white/70 backdrop-blur-xl border border-gray-200 rounded-3xl p-6 shadow-sm">
+                <h3 className="text-lg font-semibold text-gray-900 mb-6">
+                  System Status
+                </h3>
+
+                <div className="flex items-center justify-between mb-4">
+                  <span className="text-green-600 font-medium">
+                    All systems operational
+                  </span>
                   <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
                 </div>
-                <div className="text-sm text-gray-600 space-y-2">
-                  <p> Database connection stable</p>
-                  <p> API endpoints responsive</p>
-                  <p> Authentication system active</p>
-                  <p> Real-time updates enabled</p>
+
+                <div className="space-y-2 text-sm text-gray-500">
+                  <p>Database connected</p>
+                  <p>API running normally</p>
+                  <p>Authentication active</p>
+                  <p>Real-time sync enabled</p>
                 </div>
               </div>
             </div>
-          </div>
 
-          {/* Last Updated */}
-          <div className="mt-8 text-center">
-            <p className="text-gray-400 text-sm">
+            {/* FOOTER */}
+            <div className="mt-10 text-center text-sm text-gray-400">
               Last updated: {new Date().toLocaleString()}
-            </p>
-          </div>
-        </>
-      )}
+            </div>
+          </>
+        )}
+      </div>
     </div>
   );
 }

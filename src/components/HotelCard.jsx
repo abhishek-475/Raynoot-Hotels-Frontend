@@ -11,10 +11,16 @@ import {
   FaHeart,
   FaShareAlt
 } from "react-icons/fa";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 
 export default function HotelCard({ hotel }) {
   const [liked, setLiked] = useState(false);
+
+  // ✅ Compute lowest room price dynamically
+  const lowestPrice = useMemo(() => {
+    if (!hotel.rooms || hotel.rooms.length === 0) return null;
+    return Math.min(...hotel.rooms.map((r) => r.price || 0));
+  }, [hotel.rooms]);
 
   const amenities = [
     { icon: FaWifi, available: hotel.amenities?.includes("wifi") },
@@ -25,13 +31,12 @@ export default function HotelCard({ hotel }) {
     { icon: FaDumbbell, available: hotel.amenities?.includes("gym") }
   ];
 
-  const formatPrice = (price) => {
-    return new Intl.NumberFormat("en-IN", {
+  const formatPrice = (price) =>
+    new Intl.NumberFormat("en-IN", {
       style: "currency",
       currency: "INR",
       maximumFractionDigits: 0
     }).format(price);
-  };
 
   return (
     <div className="group relative bg-white rounded-3xl overflow-hidden transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl">
@@ -44,10 +49,9 @@ export default function HotelCard({ hotel }) {
           className="w-full h-64 object-cover transition-transform duration-700 group-hover:scale-110"
         />
 
-        {/* Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/10 to-transparent opacity-80 group-hover:opacity-100 transition duration-500" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/10 to-transparent" />
 
-        {/* Top Actions */}
+        {/* Actions */}
         <div className="absolute top-4 right-4 flex gap-2">
           <button
             onClick={() => setLiked(!liked)}
@@ -59,21 +63,17 @@ export default function HotelCard({ hotel }) {
           >
             <FaHeart size={14} />
           </button>
-
-          <button className="w-9 h-9 flex items-center justify-center rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-white hover:bg-white/40 transition">
-            <FaShareAlt size={13} />
-          </button>
         </div>
 
         {/* Badge */}
         <div className="absolute top-4 left-4 bg-white/90 text-gray-800 text-xs px-3 py-1 rounded-full font-semibold shadow">
-          Guest Favorite
+          {hotel.stars >= 4 ? "Luxury Stay" : "Popular"}
         </div>
 
         {/* Bottom Info */}
         <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between text-white">
           <div>
-            <h3 className="font-bold text-lg leading-tight line-clamp-1">
+            <h3 className="font-bold text-lg line-clamp-1">
               {hotel.name}
             </h3>
             <div className="flex items-center text-xs opacity-90">
@@ -83,10 +83,16 @@ export default function HotelCard({ hotel }) {
           </div>
 
           <div className="text-right">
-            <div className="text-lg font-bold">
-              {formatPrice(hotel.pricePerNight || 2999)}
-            </div>
-            <div className="text-xs opacity-80">night</div>
+            {lowestPrice ? (
+              <>
+                <div className="text-lg font-bold">
+                  {formatPrice(lowestPrice)}
+                </div>
+                <div className="text-xs opacity-80">starting price</div>
+              </>
+            ) : (
+              <div className="text-xs opacity-80">No rooms</div>
+            )}
           </div>
         </div>
       </div>
@@ -94,14 +100,17 @@ export default function HotelCard({ hotel }) {
       {/* CONTENT */}
       <div className="p-5">
 
-        {/* Rating */}
+        {/* ⭐ Stars instead of fake rating */}
         <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-1 text-sm font-semibold">
-            <FaStar className="text-yellow-400 text-xs" />
-            {hotel.rating || 4.8}
-            <span className="text-gray-400 font-normal">
-              ({hotel.reviews || 120})
-            </span>
+          <div className="flex gap-1">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <FaStar
+                key={i}
+                className={`text-xs ${
+                  i < hotel.stars ? "text-yellow-400" : "text-gray-300"
+                }`}
+              />
+            ))}
           </div>
 
           <span className="text-xs text-green-600 font-semibold">
@@ -112,7 +121,7 @@ export default function HotelCard({ hotel }) {
         {/* Description */}
         <p className="text-sm text-gray-500 line-clamp-2 mb-4">
           {hotel.description ||
-            "Experience premium comfort with world-class amenities and top-rated service."}
+            "Premium stay with top-tier amenities and excellent service."}
         </p>
 
         {/* Amenities */}
@@ -134,7 +143,7 @@ export default function HotelCard({ hotel }) {
           })}
         </div>
 
-        {/* BUTTON */}
+        {/* CTA */}
         <Link
           to={`/hotels/${hotel._id}`}
           className="block w-full text-center bg-black text-white py-3 rounded-xl font-semibold hover:bg-gray-900 transition"
