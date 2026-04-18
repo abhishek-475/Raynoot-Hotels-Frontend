@@ -5,21 +5,17 @@ import {
   createHotel,
   updateHotel
 } from "../../services/hotelService";
-import {
-  FaHotel,
-  FaStar,
-  FaMapMarkerAlt,
-  FaPlus
-} from "react-icons/fa";
+import { FaHotel, FaPlus, FaStar } from "react-icons/fa";
+import toast from "react-hot-toast";
+
+/* ================= MAIN PAGE ================= */
 
 export default function ManageHotels() {
   const [hotels, setHotels] = useState([]);
   const [loading, setLoading] = useState(true);
+
   const [showModal, setShowModal] = useState(false);
   const [editingHotel, setEditingHotel] = useState(null);
-
-  const [notification, setNotification] = useState(null);
-  const [confirmDeleteId, setConfirmDeleteId] = useState(null);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -35,91 +31,19 @@ export default function ManageHotels() {
 
   const [newAmenity, setNewAmenity] = useState("");
 
-  // 🔔 Notification
-  const showNotification = (message, type = "success") => {
-    setNotification({ message, type });
-    setTimeout(() => setNotification(null), 3000);
-  };
-
-  // Fetch
-  const fetchHotels = async () => {
-    try {
-      const data = await getAllHotels();
-      setHotels(data);
-      showNotification("Hotels loaded");
-    } catch {
-      showNotification("Failed to load hotels", "error");
-    }
-    setLoading(false);
-  };
-
   useEffect(() => {
     fetchHotels();
   }, []);
 
-  // Delete
-  const handleDelete = (id) => {
-    setConfirmDeleteId(id);
-  };
-
-  const confirmDelete = async () => {
+  const fetchHotels = async () => {
     try {
-      await deleteHotel(confirmDeleteId);
-      showNotification("Hotel deleted");
-      fetchHotels();
+      const data = await getAllHotels();
+      setHotels(data);
     } catch {
-      showNotification("Delete failed", "error");
+      toast.error("Failed to load hotels");
+    } finally {
+      setLoading(false);
     }
-    setConfirmDeleteId(null);
-  };
-
-  // Create
-  const handleCreate = async (e) => {
-    e.preventDefault();
-    try {
-      await createHotel({
-        ...formData,
-        pricePerNight: Number(formData.pricePerNight),
-        stars: Number(formData.stars),
-        images: formData.images.filter((i) => i),
-      });
-
-      showNotification("Hotel created");
-      setShowModal(false);
-      resetForm();
-      fetchHotels();
-    } catch {
-      showNotification("Create failed", "error");
-    }
-  };
-
-  // Update
-  const handleUpdate = async (e) => {
-    e.preventDefault();
-    try {
-      await updateHotel(editingHotel._id, {
-        ...formData,
-        pricePerNight: Number(formData.pricePerNight),
-        stars: Number(formData.stars),
-        images: formData.images.filter((i) => i),
-      });
-
-      showNotification("Hotel updated");
-      setShowModal(false);
-      resetForm();
-      fetchHotels();
-    } catch {
-      showNotification("Update failed", "error");
-    }
-  };
-
-  const handleEdit = (hotel) => {
-    setEditingHotel(hotel);
-    setFormData({
-      ...hotel,
-      images: hotel.images?.length ? hotel.images : [""],
-    });
-    setShowModal(true);
   };
 
   const resetForm = () => {
@@ -132,188 +56,273 @@ export default function ManageHotels() {
       stars: 3,
       pricePerNight: "",
       amenities: [],
-      images: [""],
+      images: [""]
     });
     setEditingHotel(null);
+    setNewAmenity("");
   };
 
-  // UI helpers
-  const renderStars = (stars) =>
-    Array.from({ length: 5 }, (_, i) => (
-      <FaStar
-        key={i}
-        className={i < stars ? "text-yellow-400" : "text-gray-300"}
-      />
-    ));
+  const handleCreate = async (e) => {
+    e.preventDefault();
+
+    const payload = {
+      ...formData,
+      stars: Number(formData.stars),
+      pricePerNight: Number(formData.pricePerNight),
+      images: formData.images.filter((i) => i.trim())
+    };
+
+    try {
+      await createHotel(payload);
+      toast.success("Hotel created");
+      setShowModal(false);
+      resetForm();
+      fetchHotels();
+    } catch {
+      toast.error("Create failed");
+    }
+  };
+
+  const handleUpdate = async (e) => {
+    e.preventDefault();
+
+    const payload = {
+      ...formData,
+      stars: Number(formData.stars),
+      pricePerNight: Number(formData.pricePerNight),
+      images: formData.images.filter((i) => i.trim())
+    };
+
+    try {
+      await updateHotel(editingHotel._id, payload);
+      toast.success("Hotel updated");
+      setShowModal(false);
+      resetForm();
+      fetchHotels();
+    } catch {
+      toast.error("Update failed");
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm("Delete hotel?")) return;
+    await deleteHotel(id);
+    fetchHotels();
+  };
+
+  const handleEdit = (hotel) => {
+    setEditingHotel(hotel);
+    setFormData({
+      ...hotel,
+      images: hotel.images?.length ? hotel.images : [""],
+      amenities: hotel.amenities || []
+    });
+    setShowModal(true);
+  };
+
+  const addAmenity = () => {
+    if (newAmenity.trim()) {
+      setFormData({
+        ...formData,
+        amenities: [...formData.amenities, newAmenity.trim()]
+      });
+      setNewAmenity("");
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-6">
+    <div className="min-h-screen bg-gray-50 p-6">
 
-      {/* Header */}
-      <div className="flex justify-between mb-10">
-        <div>
-          <h1 className="text-4xl font-bold">Hotels</h1>
-          <p className="text-gray-500">Premium management dashboard</p>
-        </div>
+      {/* HEADER */}
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-3xl font-bold">Hotels</h1>
 
         <button
           onClick={() => setShowModal(true)}
-          className="flex items-center gap-2 bg-gradient-to-r from-rose-500 to-orange-400 text-white px-6 py-3 rounded-2xl shadow hover:scale-105 transition"
+          className="flex items-center gap-2 bg-gradient-to-r from-orange-500 to-rose-500 text-white px-5 py-2 rounded-xl"
         >
-          <FaPlus />
-          Add Hotel
+          <FaPlus /> Add Hotel
         </button>
       </div>
 
-      {/* Cards */}
+      {/* LIST */}
       {loading ? (
         <p>Loading...</p>
       ) : (
         <div className="grid md:grid-cols-3 gap-6">
-          {hotels.map((hotel) => (
-            <div
-              key={hotel._id}
-              className="group bg-white rounded-3xl shadow hover:shadow-xl transition hover:-translate-y-2 hover:scale-[1.02]"
-            >
-              <div className="relative">
-                <img
-                  src={hotel.images?.[0]}
-                  className="h-56 w-full object-cover rounded-t-3xl"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+          {hotels.map((h) => (
+            <div key={h._id} className="bg-white p-5 rounded-xl shadow">
 
-                <div className="absolute top-4 left-4 bg-white/80 px-3 py-1 rounded-full flex gap-1">
-                  {renderStars(hotel.stars)}
-                </div>
+              <img
+                src={h.images?.[0]}
+                className="h-40 w-full object-cover rounded-lg mb-3"
+              />
 
-                <div className="absolute bottom-4 right-4 bg-black text-white px-3 py-1 rounded">
-                  ₹{hotel.pricePerNight}
-                </div>
+              <h2 className="font-bold">{h.name}</h2>
+
+              <p className="text-sm text-gray-500">
+                {h.city}, {h.country}
+              </p>
+
+              <div className="flex mt-2">
+                {[...Array(5)].map((_, i) => (
+                  <FaStar key={i} className={i < h.stars ? "text-yellow-400" : "text-gray-300"} />
+                ))}
               </div>
 
-              <div className="p-5">
-                <h2 className="font-semibold">{hotel.name}</h2>
-                <p className="text-sm text-gray-500 flex items-center gap-1">
-                  <FaMapMarkerAlt /> {hotel.city}
-                </p>
-
-                <div className="flex gap-2 mt-4">
-                  <button
-                    onClick={() => handleEdit(hotel)}
-                    className="flex-1 bg-black text-white py-2 rounded-xl"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => handleDelete(hotel._id)}
-                    className="flex-1 bg-red-500 text-white py-2 rounded-xl"
-                  >
-                    Delete
-                  </button>
-                </div>
+              <div className="flex gap-2 mt-4">
+                <button
+                  onClick={() => handleEdit(h)}
+                  className="flex-1 bg-black text-white py-2 rounded"
+                >
+                  Edit
+                </button>
+                <button
+                  onClick={() => handleDelete(h._id)}
+                  className="flex-1 bg-red-500 text-white py-2 rounded"
+                >
+                  Delete
+                </button>
               </div>
+
             </div>
           ))}
         </div>
       )}
 
-      {/* Modal */}
+      {/* ================= PREMIUM MODAL ================= */}
       {showModal && (
-        <div className="fixed inset-0 bg-black/40 flex justify-center items-center">
-          <div className="bg-white p-6 rounded-3xl w-full max-w-xl">
-            <h2 className="text-xl font-bold mb-4">
-              {editingHotel ? "Edit Hotel" : "Add Hotel"}
-            </h2>
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 backdrop-blur">
 
-            <form onSubmit={editingHotel ? handleUpdate : handleCreate}>
-              <input
-                placeholder="Name"
-                value={formData.name}
-                onChange={(e) =>
-                  setFormData({ ...formData, name: e.target.value })
-                }
-                className="input-premium mb-2"
-              />
+          <div className="w-full max-w-5xl bg-white rounded-3xl shadow-2xl overflow-hidden">
 
-              <input
-                placeholder="City"
-                value={formData.city}
-                onChange={(e) =>
-                  setFormData({ ...formData, city: e.target.value })
-                }
-                className="input-premium mb-2"
-              />
+            {/* HEADER */}
+            <div className="flex justify-between p-6 border-b">
+              <h2 className="text-xl font-bold">
+                {editingHotel ? "Edit Hotel" : "Add Hotel"}
+              </h2>
 
-              <input
-                placeholder="Price"
-                type="number"
-                value={formData.pricePerNight}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    pricePerNight: e.target.value,
-                  })
-                }
-                className="input-premium mb-4"
-              />
+              <button onClick={() => setShowModal(false)}>✕</button>
+            </div>
 
-              <div className="flex justify-end gap-2">
-                <button
-                  type="button"
-                  onClick={() => setShowModal(false)}
-                  className="px-4 py-2 border rounded-xl"
-                >
+            {/* FORM */}
+            <form
+              onSubmit={editingHotel ? handleUpdate : handleCreate}
+              className="p-6 grid md:grid-cols-2 gap-6 max-h-[70vh] overflow-y-auto"
+            >
+
+              {/* LEFT */}
+              <div className="space-y-4">
+                <Input label="Name" value={formData.name}
+                  onChange={(v) => setFormData({ ...formData, name: v })} />
+
+                <Textarea label="Description" value={formData.description}
+                  onChange={(v) => setFormData({ ...formData, description: v })} />
+
+                <Input label="Price" type="number" value={formData.pricePerNight}
+                  onChange={(v) => setFormData({ ...formData, pricePerNight: v })} />
+
+                <Select value={formData.stars}
+                  onChange={(v) => setFormData({ ...formData, stars: v })} />
+              </div>
+
+              {/* RIGHT */}
+              <div className="space-y-4">
+                <Input label="City" value={formData.city}
+                  onChange={(v) => setFormData({ ...formData, city: v })} />
+
+                <Input label="Country" value={formData.country}
+                  onChange={(v) => setFormData({ ...formData, country: v })} />
+
+                {/* Amenities */}
+                <div>
+                  <input
+                    value={newAmenity}
+                    onChange={(e) => setNewAmenity(e.target.value)}
+                    placeholder="Amenity"
+                    className="border px-3 py-2 rounded w-full"
+                  />
+                  <button type="button" onClick={addAmenity} className="mt-2 text-blue-600">
+                    Add
+                  </button>
+
+                  <div className="flex gap-2 mt-2 flex-wrap">
+                    {formData.amenities.map((a, i) => (
+                      <span key={i} className="bg-gray-200 px-2 py-1 rounded">
+                        {a}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Images */}
+                {formData.images.map((img, i) => (
+                  <input
+                    key={i}
+                    value={img}
+                    onChange={(e) => {
+                      const arr = [...formData.images];
+                      arr[i] = e.target.value;
+                      setFormData({ ...formData, images: arr });
+                    }}
+                    className="border px-3 py-2 rounded w-full"
+                  />
+                ))}
+              </div>
+
+              {/* FOOTER */}
+              <div className="col-span-2 flex justify-end gap-4">
+                <button type="button" onClick={() => setShowModal(false)}>
                   Cancel
                 </button>
 
-                <button className="px-4 py-2 bg-orange-500 text-white rounded-xl">
-                  Save
+                <button className="bg-orange-500 text-white px-6 py-2 rounded">
+                  {editingHotel ? "Update" : "Create"}
                 </button>
               </div>
+
             </form>
-          </div>
-        </div>
-      )}
-
-      {/* Delete Confirm */}
-      {confirmDeleteId && (
-        <div className="fixed inset-0 bg-black/40 flex justify-center items-center">
-          <div className="bg-white p-6 rounded-3xl text-center">
-            <p>Delete this hotel?</p>
-            <div className="flex gap-3 mt-4">
-              <button
-                onClick={() => setConfirmDeleteId(null)}
-                className="px-4 py-2 bg-gray-200 rounded"
-              >
-                Cancel
-              </button>
-
-              <button
-                onClick={confirmDelete}
-                className="px-4 py-2 bg-red-500 text-white rounded"
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Notification */}
-      {notification && (
-        <div className="fixed top-6 right-6">
-          <div
-            className={`px-4 py-2 rounded-xl shadow 
-            ${
-              notification.type === "error"
-                ? "bg-red-100 text-red-700"
-                : "bg-green-100 text-green-700"
-            }`}
-          >
-            {notification.message}
           </div>
         </div>
       )}
     </div>
   );
 }
+
+/* ================= REUSABLE INPUTS ================= */
+
+const Input = ({ label, value, onChange, type = "text" }) => (
+  <div>
+    <label className="text-sm text-gray-500">{label}</label>
+    <input
+      type={type}
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      className="w-full border px-3 py-2 rounded"
+      required
+    />
+  </div>
+);
+
+const Textarea = ({ label, value, onChange }) => (
+  <div>
+    <label className="text-sm text-gray-500">{label}</label>
+    <textarea
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      className="w-full border px-3 py-2 rounded"
+    />
+  </div>
+);
+
+const Select = ({ value, onChange }) => (
+  <select
+    value={value}
+    onChange={(e) => onChange(e.target.value)}
+    className="w-full border px-3 py-2 rounded"
+  >
+    {[1,2,3,4,5].map((s) => (
+      <option key={s} value={s}>{s} Star</option>
+    ))}
+  </select>
+);
