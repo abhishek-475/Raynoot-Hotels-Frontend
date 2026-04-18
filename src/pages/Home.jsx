@@ -18,14 +18,44 @@ import {
 } from "react-icons/fa";
 
 export default function Home() {
-  const popularDestinations = [
-    { name: "Paris", country: "France", hotels: 124, image: "https://images.unsplash.com/photo-1502602898536-47ad22581b52" },
-    { name: "New York", country: "USA", hotels: 98, image: "https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9" },
-    { name: "Tokyo", country: "Japan", hotels: 87, image: "https://images.unsplash.com/photo-1540959733332-0b10d1e4b288" },
-    { name: "London", country: "UK", hotels: 112, image: "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad" },
-    { name: "Dubai", country: "UAE", hotels: 76, image: "https://images.unsplash.com/photo-1512453979798-5ea266f8880c" },
-    { name: "Sydney", country: "Australia", hotels: 65, image: "https://images.unsplash.com/photo-1506973035872-a4ec16b8e8d9" }
-  ];
+ const popularDestinations = [
+  {
+    name: "Paris",
+    country: "France",
+    hotels: 124,
+    image: "https://images.unsplash.com/photo-1499856871958-5b9627545d1a?q=80&w=1600&auto=format&fit=crop"
+  },
+  {
+    name: "New York",
+    country: "USA",
+    hotels: 98,
+    image: "https://images.unsplash.com/photo-1534430480872-3498386e7856?q=80&w=1600&auto=format&fit=crop"
+  },
+  {
+    name: "Tokyo",
+    country: "Japan",
+    hotels: 87,
+    image: "https://images.unsplash.com/photo-1549692520-acc6669e2f0c?q=80&w=1600&auto=format&fit=crop"
+  },
+  {
+    name: "London",
+    country: "UK",
+    hotels: 112,
+    image: "https://images.unsplash.com/photo-1505761671935-60b3a7427bad?q=80&w=1600&auto=format&fit=crop"
+  },
+  {
+    name: "Dubai",
+    country: "UAE",
+    hotels: 76,
+    image: "https://images.unsplash.com/photo-1508057198894-247b23fe5ade?q=80&w=1600&auto=format&fit=crop"
+  },
+  {
+    name: "Sydney",
+    country: "Australia",
+    hotels: 65,
+    image: "https://images.unsplash.com/photo-1506973035872-a4ec16b8e8d9?q=80&w=1600&auto=format&fit=crop"
+  }
+];
 
   const features = [
     { icon: FaWifi, title: "Free WiFi", description: "High-speed internet access", color: "from-blue-500 to-cyan-400" },
@@ -109,7 +139,6 @@ export default function Home() {
           </div>
         </motion.div>
 
-        {/* Scroll indicator */}
         <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-white/50">
           <span className="text-xs tracking-widest uppercase">Scroll</span>
           <div className="w-px h-12 bg-gradient-to-b from-white/50 to-transparent" />
@@ -122,6 +151,8 @@ export default function Home() {
           }
         `}</style>
       </section>
+
+ 
 
       {/* STATS BAR */}
       <section className="bg-gray-950 text-white py-10">
