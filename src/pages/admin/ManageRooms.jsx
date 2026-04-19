@@ -37,21 +37,36 @@ export default function ManageRooms() {
   const fetchRooms = async () => {
     try {
       const data = await getAllRooms();
-      setRooms(data);
+      const roomsData = Array.isArray(data)
+        ? data
+        : Array.isArray(data?.rooms)
+          ? data.rooms
+          : [];
+
+      setRooms(roomsData);
     } catch {
       toast.error("Failed to load rooms");
     }
     setLoading(false);
   };
 
-  const fetchHotels = async () => {
-    try {
-      const data = await getAllHotels();
-      setHotels(data);
-    } catch {
-      toast.error("Failed to load hotels");
-    }
-  };
+const fetchHotels = async () => {
+  try {
+    const data = await getAllHotels();
+
+    const hotelsData = Array.isArray(data)
+      ? data
+      : Array.isArray(data?.hotels)
+        ? data.hotels
+        : [];
+
+    setHotels(hotelsData);
+
+  } catch {
+    toast.error("Failed to load hotels");
+    setHotels([]); // IMPORTANT
+  }
+};
 
   const handleCheckAvailability = async (roomId) => {
     if (!checkIn || !checkOut) {
@@ -68,8 +83,8 @@ export default function ManageRooms() {
       }));
 
       res.available
-        ? toast.success("Available ✅")
-        : toast.error("Not available ❌");
+        ? toast.success("Available ")
+        : toast.error("Not available ");
     } catch (err) {
       toast.error(err.message);
     }
@@ -170,7 +185,11 @@ export default function ManageRooms() {
         </div>
 
         <button
-          onClick={() => setShowModal(true)}
+          onClick={() => {
+            resetForm();
+            setEditingRoom(null);
+            setShowModal(true);
+          }}
           className="bg-gradient-to-r from-rose-500 to-orange-400 text-white px-6 py-3 rounded-2xl shadow hover:scale-105 transition"
         >
           + Add Room
@@ -255,8 +274,8 @@ export default function ManageRooms() {
                 {availability[room._id] && (
                   <p
                     className={`mt-2 text-sm font-semibold ${availability[room._id].available
-                        ? "text-green-600"
-                        : "text-red-600"
+                      ? "text-green-600"
+                      : "text-red-600"
                       }`}
                   >
                     {availability[room._id].available
