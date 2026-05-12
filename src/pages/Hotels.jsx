@@ -15,31 +15,36 @@ export default function Hotels() {
   const [page, setPage] = useState(1);
   const [pages, setPages] = useState(1);
 
-  // FETCH
-  useEffect(() => {
-    const fetchHotels = async () => {
-      try {
-        setLoading(true);
+useEffect(() => {
+  const fetchHotels = async () => {
+    try {
+      setLoading(true);
 
-        const data = await getAllHotels({
-          search: query,
-          sort,
-          page
-        });
-
-        setHotels(data?.hotels || []);
-        setPages(data?.pages || 1);
-        setPages(data.pages);
-
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
+      const params = {
+        page
+      };
+      
+      if (query?.trim()) {
+        params.search = query;
       }
-    };
 
-    fetchHotels();
-  }, [query, sort, page]);
+      if (sort) {
+        params.sort = sort;
+      }
+
+      const data = await getAllHotels(params);
+      setHotels(data?.hotels || []);
+      setPages(data?.pages || 1);
+
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchHotels();
+}, [query, sort, page]);
 
   return (
     <div className="min-h-screen bg-gray-50">
