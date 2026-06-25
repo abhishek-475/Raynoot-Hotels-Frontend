@@ -1,4 +1,4 @@
-import API from "../utils/api";
+import API from "./api";
 
 // Create booking
 export const createBooking = async (data) => {

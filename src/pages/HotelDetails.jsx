@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { getHotelById } from "../services/hotelService";
-import RoomCard from "../components/RoomCard";
+import RoomCard from "../components/hotel/RoomCard";
 import { motion } from "framer-motion";
 import {
   FaStar,
@@ -18,7 +18,7 @@ import {
   FaDoorOpen
 } from "react-icons/fa";
 
-// 🔥 Map backend amenities → icons
+// Map backend amenities → icons
 const AMENITY_MAP = {
   wifi: { icon: FaWifi, label: "Free WiFi" },
   pool: { icon: FaSwimmingPool, label: "Pool" },
@@ -40,6 +40,7 @@ export default function HotelDetails() {
       try {
         const data = await getHotelById(id);
         setHotel(data);
+        console.log(data)
       } catch (err) {
         console.error(err);
       } finally {
@@ -125,7 +126,7 @@ export default function HotelDetails() {
             <p className="text-gray-600">{hotel.description}</p>
           </div>
 
-          {/* Amenities (🔥 dynamic from backend) */}
+          {/* Amenities ( dynamic from backend) */}
           <div>
             <h2 className="font-bold text-lg mb-3">Amenities</h2>
 

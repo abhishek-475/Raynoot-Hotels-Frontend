@@ -1,4 +1,4 @@
-import { createContext, useState, useEffect } from "react";
+import { createContext, useState, useEffect, useMemo } from "react";
 import { loginUser } from "../services/authService";
 
 export const AuthContext = createContext();
@@ -8,91 +8,63 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    console.log(" AuthProvider mounted - Checking localStorage...");
-    const token = localStorage.getItem("token");
-    const storedUser = localStorage.getItem("user");
+    try {
+      const token = localStorage.getItem("token");
+      const storedUser = localStorage.getItem("user");
 
-    console.log(" Token from localStorage:", token ? "PRESENT" : "MISSING");
-    // console.log(" User from localStorage:", storedUser ? "PRESENT" : "MISSING");
-
-    if (token && storedUser) {
-      try {
-        const parsedUser = JSON.parse(storedUser);
-        console.log(' User loaded from localStorage:', parsedUser);
-        setUser(parsedUser);
-      } catch (error) {
-        console.error(' Error parsing stored user:', error);
+      if (token && storedUser) {
+        setUser(JSON.parse(storedUser));
       }
-    } else {
-      console.log('ℹ️ No authentication data found in localStorage');
+    } catch (error) {
+      console.error("Failed to restore auth state:", error);
+
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }, []);
 
   const setUserAfterLogin = (userData) => {
-    // console.log(' setUserAfterLogin called with:', userData);
-
     const userWithRole = {
       id: userData._id || userData.id,
       name: userData.name,
       email: userData.email,
-      role: userData.role || "user"
+      role: userData.role || "user",
     };
 
-    console.log(' Storing user in localStorage:', userWithRole);
     localStorage.setItem("user", JSON.stringify(userWithRole));
-
-    // Verify storage
-    const storedUser = localStorage.getItem("user");
-    console.log(' User stored in localStorage:', storedUser ? "SUCCESS" : "FAILED");
-
     setUser(userWithRole);
   };
 
   const login = async (email, password) => {
-    try {
-      console.log(' Starting login process...');
-      console.log('Email:', email);
+    const res = await loginUser({ email, password });
 
-      const res = await loginUser({ email, password });
-      console.log(' Login API response received');
+    localStorage.setItem("token", res.token);
 
-      // Store token
-      console.log(' Storing token...');
-      localStorage.setItem("token", res.token);
+    setUserAfterLogin(res.user);
 
-      // Verify token storage
-      const storedToken = localStorage.getItem("token");
-      console.log(' Token storage verification:', storedToken ? "SUCCESS" : "FAILED");
-
-      setUserAfterLogin(res.user);
-      return res;
-    } catch (error) {
-      console.error(' Login failed:', error);
-      console.error(' Error details:', error.response?.data || error.message);
-      throw error;
-    }
+    return res;
   };
 
   const logout = () => {
-    console.log('🚪 Logging out...');
     localStorage.removeItem("token");
     localStorage.removeItem("user");
+
     setUser(null);
-    console.log(' localStorage cleared');
   };
 
-  // Add these helper methods
-  const isAuthenticated = () => {
-    const token = localStorage.getItem("token");
-    const hasUser = !!user;
-    console.log(' isAuthenticated check - Token:', token ? 'PRESENT' : 'MISSING', 'User:', hasUser);
-    return !!token && hasUser;
-  };
-
-  const isAdmin = () => {
-    return user?.role === "admin";
-  };
+  const authContextValue = useMemo(
+    () => ({
+      user,
+      login,
+      logout,
+      setUserAfterLogin,
+      isAuthenticated: !!user,
+      isAdmin: user?.role === "admin",
+    }),
+    [user]
+  );
 
   if (loading) {
     return (
@@ -104,15 +76,6 @@ export const AuthProvider = ({ children }) => {
       </div>
     );
   }
-
-  const authContextValue = {
-    user,
-    login,
-    logout,
-    setUserAfterLogin,
-    isAuthenticated: isAuthenticated(), // Call the function to get current value
-    isAdmin: isAdmin(), // Call the function to get current value
-  };
 
   return (
     <AuthContext.Provider value={authContextValue}>

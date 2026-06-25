@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { getAllHotels } from "../services/hotelService";
-import HotelCard from "../components/HotelCard";
+import HotelCard from "../components/hotel/HotelCard";
 import { FaSearch, FaSortAmountDown, FaHotel } from "react-icons/fa";
 import { motion } from "framer-motion";
 

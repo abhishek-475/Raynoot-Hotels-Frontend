@@ -128,30 +128,72 @@ export default function Booking() {
   };
 
   const handleBooking = async () => {
-    const token = localStorage.getItem("token");
-    if (!user || !token) {
-      toast.error("Please log in to book your stay");
-      navigate("/login", { state: { from: `/booking/${hotelId}/${roomId}` } });
-      return;
-    }
-    const v = validateDates();
-    if (!v.isValid) { toast.error(v.error); return; }
-    if (guests > (room?.capacity || 2)) { toast.error(`Max ${room?.capacity || 2} guests`); return; }
-    if (!isAvailable && !availabilityError) { toast.error("Room not available for selected dates"); return; }
+  const token = localStorage.getItem("token");
 
-    setBookingLoading(true);
-    try {
-      await createBooking({ hotelId, roomId, startDate: checkIn, endDate: checkOut, guests: parseInt(guests) });
-      toast.success("Booking confirmed!");
-      setTimeout(() => navigate("/bookings/my"), 1200);
-    } catch (err) {
-      const msg = err.response?.data?.message || "Booking failed. Please try again.";
-      if (err.response?.status === 401) { logout(); navigate("/login"); }
-      else toast.error(msg);
-    } finally {
-      setBookingLoading(false);
+  if (!user || !token) {
+    toast.error("Please log in to book your stay");
+
+    navigate("/login", {
+      state: { from: `/booking/${hotelId}/${roomId}` },
+    });
+
+    return;
+  }
+
+  const v = validateDates();
+
+  if (!v.isValid) {
+    toast.error(v.error);
+    return;
+  }
+
+  if (guests > (room?.capacity || 2)) {
+    toast.error(`Max ${room?.capacity || 2} guests`);
+    return;
+  }
+
+  if (!isAvailable && !availabilityError) {
+    toast.error("Room not available for selected dates");
+    return;
+  }
+
+  setBookingLoading(true);
+
+  try {
+    const bookingData = {
+      hotel: hotelId,
+      room: roomId,
+      startDate: checkIn,
+      endDate: checkOut,
+      guests: Number(guests),
+    };
+
+    console.log("Booking Payload:", bookingData);
+
+    await createBooking(bookingData);
+
+    toast.success("Booking confirmed!");
+
+    setTimeout(() => {
+      navigate("/bookings/my");
+    }, 1200);
+  } catch (err) {
+    console.error("Booking Error:", err.response?.data);
+
+    const msg =
+      err.response?.data?.message ||
+      "Booking failed. Please try again.";
+
+    if (err.response?.status === 401) {
+      logout();
+      navigate("/login");
+    } else {
+      toast.error(msg);
     }
-  };
+  } finally {
+    setBookingLoading(false);
+  }
+};
 
   const inputClass = (key) =>
     `w-full pl-10 pr-4 py-3 rounded-xl text-sm text-gray-800 outline-none border transition-all duration-200 bg-white ${

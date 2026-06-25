@@ -1,4 +1,4 @@
-import API from "../utils/api";
+import API from "./api";
 
 // Get all hotels
 export const getAllHotels = async (params) => {
